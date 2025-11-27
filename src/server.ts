@@ -24,12 +24,26 @@ console.log('🔧 PORT:', process.env.PORT);
 console.log('🔧 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
 console.log('🔧 JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
 
+// Log MongoDB URI for debugging (hide password)
+if (process.env.MONGODB_URI) {
+  const hiddenUri = process.env.MONGODB_URI.replace(/:[^:@]*@/, ':***@');
+  console.log('🔧 MongoDB URI pattern:', hiddenUri);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy for Railway/production
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+  console.log('🔧 Trust proxy enabled for production');
+}
+
 // Connect to database
 console.log('🔧 Connecting to database...');
-connectDB();
+connectDB().catch(err => {
+  console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
+});
 
 // Security middleware
 app.use(helmet());
@@ -82,7 +96,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Rate limiting
+// Rate limiting with Railway proxy support
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
