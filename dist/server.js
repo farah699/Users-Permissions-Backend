@@ -43,9 +43,14 @@ if (process.env.SKIP_MONGODB === 'true') {
     console.log('⚠️ Skipping MongoDB connection for Railway debugging');
 }
 else {
-    (0, database_1.connectDB)().catch(err => {
-        console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
-    });
+    try {
+        (0, database_1.connectDB)().catch(err => {
+            console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
+        });
+    }
+    catch (err) {
+        console.error('❌ MongoDB connection setup failed, continuing without database');
+    }
 }
 // Security middleware
 app.use((0, helmet_1.default)());
