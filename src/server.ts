@@ -27,13 +27,53 @@ connectDB();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+// CORS configuration with dynamic origin validation
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // List of allowed origins
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+    ];
+    
+    // Add environment-specific origins
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
+    }
+    if (process.env.CORS_ORIGIN) {
+      allowedOrigins.push(...process.env.CORS_ORIGIN.split(',').map(o => o.trim()));
+    }
+    
+    // Auto-allow Vercel deployments
+    const isVercelDomain = origin.includes('.vercel.app') || 
+                          origin.includes('.vercel.com') ||
+                          origin.includes('users-permissions-frontend');
+    
+    // Auto-allow Railway/Render/Netlify domains for testing
+    const isValidDeployment = origin.includes('.railway.app') ||
+                             origin.includes('.render.com') ||
+                             origin.includes('.netlify.app') ||
+                             origin.includes('.herokuapp.com');
+    
+    if (allowedOrigins.includes(origin) || isVercelDomain || isValidDeployment) {
+      callback(null, true);
+    } else {
+      console.log(`🚫 CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'), false);
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-Total-Count']
+};
+
+app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
