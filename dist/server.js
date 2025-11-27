@@ -20,9 +20,15 @@ const permissions_1 = __importDefault(require("./routes/permissions"));
 const audit_1 = __importDefault(require("./routes/audit"));
 // Load environment variables
 dotenv_1.default.config();
+console.log('🔧 Starting application...');
+console.log('🔧 NODE_ENV:', process.env.NODE_ENV);
+console.log('🔧 PORT:', process.env.PORT);
+console.log('🔧 MONGODB_URI:', process.env.MONGODB_URI ? 'SET' : 'NOT SET');
+console.log('🔧 JWT_SECRET:', process.env.JWT_SECRET ? 'SET' : 'NOT SET');
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // Connect to database
+console.log('🔧 Connecting to database...');
 (0, database_1.connectDB)();
 // Security middleware
 app.use((0, helmet_1.default)());
@@ -137,9 +143,11 @@ app.use('*', (req, res) => {
 app.use(errorHandler_1.errorHandler);
 // Start server
 if (process.env.NODE_ENV !== 'test') {
+    console.log('🔧 Starting server on port', PORT);
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`📚 API Documentation available at http://localhost:${PORT}/api-docs`);
+        console.log('✅ Application startup completed successfully!');
     });
 }
 exports.default = app;
