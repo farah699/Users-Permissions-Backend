@@ -37,11 +37,16 @@ if (process.env.NODE_ENV === 'production') {
     app.set('trust proxy', 1);
     console.log('🔧 Trust proxy enabled for production');
 }
-// Connect to database
+// Connect to database (with bypass for Railway)
 console.log('🔧 Connecting to database...');
-(0, database_1.connectDB)().catch(err => {
-    console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
-});
+if (process.env.SKIP_MONGODB === 'true') {
+    console.log('⚠️ Skipping MongoDB connection for Railway debugging');
+}
+else {
+    (0, database_1.connectDB)().catch(err => {
+        console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
+    });
+}
 // Security middleware
 app.use((0, helmet_1.default)());
 // CORS configuration with dynamic origin validation
