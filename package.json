@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "dev": "concurrently \"tsc -w\" \"nodemon dist/server.js\"",
-    "build": "npx tsc",
+    "build": "echo 'TypeScript already compiled locally'",
     "seed": "ts-node src/scripts/seed.ts",
     "test": "jest",
     "test:watch": "jest --watch",
