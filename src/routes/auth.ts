@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 import { User } from '../models/User';
 import { AuditLog } from '../models/AuditLog';
 import { authenticate } from '../middleware/auth';
@@ -61,6 +62,15 @@ const router = express.Router();
  */
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
   try {
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        success: false,
+        message: 'Database connection unavailable. Please try again later.'
+      });
+      return;
+    }
+
     // Validate request body
     const { error, value } = loginSchema.validate(req.body);
     if (error) {

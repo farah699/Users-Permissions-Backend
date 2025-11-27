@@ -39,19 +39,17 @@ if (process.env.NODE_ENV === 'production') {
   console.log('🔧 Trust proxy enabled for production');
 }
 
-// Connect to database (with bypass for Railway)
+// Connect to database
 console.log('🔧 Connecting to database...');
-if (process.env.SKIP_MONGODB === 'true') {
-  console.log('⚠️ Skipping MongoDB connection for Railway debugging');
-} else {
-  try {
-    connectDB().catch(err => {
-      console.error('❌ Failed to connect to MongoDB, but continuing...', err.message);
-    });
-  } catch (err) {
-    console.error('❌ MongoDB connection setup failed, continuing without database');
-  }
-}
+connectDB()
+  .then(() => {
+    console.log('✅ Database connection established successfully');
+  })
+  .catch(err => {
+    console.error('❌ Failed to connect to MongoDB:', err.message);
+    // Continue without database - routes will handle missing connection
+    console.log('🔄 Server will continue without database connection');
+  });
 
 // Security middleware
 app.use(helmet());
