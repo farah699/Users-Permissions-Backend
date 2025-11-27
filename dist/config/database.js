@@ -6,6 +6,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const connectDB = async () => {
+    // Skip MongoDB in production if requested
+    if (process.env.SKIP_MONGODB === 'true') {
+        console.log('⚠️ MongoDB connection skipped (SKIP_MONGODB=true)');
+        return;
+    }
     try {
         const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/users_permissions_db';
         await mongoose_1.default.connect(mongoURI, {
@@ -27,6 +32,11 @@ const connectDB = async () => {
     }
     catch (error) {
         console.error('❌ MongoDB connection failed:', error);
+        // DON'T EXIT - Continue without database in production
+        if (process.env.NODE_ENV === 'production') {
+            console.log('🔄 Continuing without MongoDB in production mode...');
+            return;
+        }
         process.exit(1);
     }
 };
